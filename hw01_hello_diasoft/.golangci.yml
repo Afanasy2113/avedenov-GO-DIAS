@@ -1,0 +1,6 @@
+linters-settings:
+  depguard:
+    rules:
+      main:
+        allow:
+          - golang.org/x/example/hello/reverse
