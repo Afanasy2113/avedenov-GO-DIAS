@@ -54,7 +54,7 @@ func Unpack(s string) (string, error) {
 				continue
 			}
 
-			// Дублируем предыдущий символ в зависимости от значения
+			// Дублируем предыдущий символ в зависимости от значения.
 			last := result[len(result)-1]
 			for j := 0; j < count-1; j++ {
 				result = append(result, last)
