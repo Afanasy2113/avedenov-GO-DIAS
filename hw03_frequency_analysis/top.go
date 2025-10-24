@@ -68,13 +68,13 @@ func Top10(s string) []string {
 		return wSlices[i].count > wSlices[j].count
 	})
 
-	//Выбираем топ-10 слов.
+	// Выбираем топ-10 слов.
 	result := make([]string, 0, 10)
 	for i := 0; i < len(wSlices) && i < 10; i++ {
 		result = append(result, wSlices[i].word)
 	}
 
-	//Вывод в консоль для отладки.
+	// Вывод в консоль для отладки.
 	fmt.Println("======Дебаг==========")
 	for i := 0; i < len(wSlices) && i < 10; i++ {
 		fmt.Printf("%d. '%s' (%d)\n", i+1, wSlices[i].word, wSlices[i].count)
