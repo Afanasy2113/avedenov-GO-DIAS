@@ -65,7 +65,6 @@ func (l *list) MoveToFront(i *ListItem) {
 	}
 	l.front = i
 	// len не меняется при перемещении
-
 }
 
 // PushBack implements List.
