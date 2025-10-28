@@ -24,7 +24,7 @@ func Top10(s string) []string {
 
 		var trimWord string
 
-		// Корректно обрабатываем дефис: "-" - не слово, "----" - слово
+		// Корректно обрабатываем дефис: "-" - не слово, "----" - слово.
 		if onlyDefis(lowerCase) {
 			trimWord = lowerCase
 		} else {
