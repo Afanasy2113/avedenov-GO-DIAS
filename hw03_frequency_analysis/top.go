@@ -8,8 +8,6 @@ import (
 )
 
 func Top10(s string) []string {
-	// Place your code here.
-
 	// Разбиваем текст на отдельные слова.
 	words := strings.Fields(s)
 
@@ -18,7 +16,6 @@ func Top10(s string) []string {
 
 	// Считаем, сколько раз встретилось каждое слово.
 	for _, word := range words {
-
 		// Нижний регистр.
 		lowerCase := strings.ToLower(word)
 
@@ -28,7 +25,6 @@ func Top10(s string) []string {
 		if onlyDefis(lowerCase) {
 			trimWord = lowerCase
 		} else {
-
 			// Убираем знаки препинания по краям.
 			start := 0
 			for start < len(lowerCase) && unicode.IsPunct(rune(lowerCase[start])) {
@@ -55,7 +51,7 @@ func Top10(s string) []string {
 		count int
 	}
 
-	var wSlices []wSlice
+	wSlices := make([]wSlice, 0, len(wCount))
 	for word, count := range wCount {
 		wSlices = append(wSlices, wSlice{word, count})
 	}
