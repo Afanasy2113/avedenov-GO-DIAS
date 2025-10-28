@@ -1,4 +1,4 @@
-module github.com/avedenov-GO-DIAS/hw03_frequency_analysis
+module github.com/Afanasy2113/avedenov-GO-DIAS/hw03_frequency_analysis
 
 go 1.19
 
