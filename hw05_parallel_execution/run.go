@@ -18,19 +18,52 @@ func Run(tasks []Task, n, m int) error {
 		return ErrErrorsLimitExceeded
 	}
 
-	// Интерпретация: m <= 0 → "нельзя ни одной ошибки"
 	maxErrors := m
 	if m <= 0 {
 		maxErrors = 0
 	}
 
 	taskCh := make(chan Task)
-	errCh := make(chan error, 1) // небольшой буфер для избежания блокировки
-	done := make(chan struct{})
+	errCh := make(chan error, 1)
+	done := make(chan struct{}) // bidirectional!
 	var wg sync.WaitGroup
 	var errHandlerWg sync.WaitGroup
 
-	// Запускаем n воркеров
+	// Запускаем воркеры
+	startWorkers(n, taskCh, errCh, done, &wg)
+
+	// Запускаем обработчик ошибок
+	errCount := startErrorHandler(maxErrors, errCh, done, &errHandlerWg)
+
+	// Отправляем задачи
+	if err := feedTasks(tasks, taskCh, done); err != nil {
+		close(taskCh)
+		wg.Wait()
+		errHandlerWg.Wait()
+		return err
+	}
+
+	// Все задачи отправлены — закрываем канал
+	close(taskCh)
+	wg.Wait()
+
+	// Дожидаемся завершения обработчика ошибок
+	close(done)
+	errHandlerWg.Wait()
+
+	// Проверяем результат
+	if maxErrors == 0 && errCount > 0 {
+		return ErrErrorsLimitExceeded
+	}
+	if maxErrors > 0 && errCount >= maxErrors {
+		return ErrErrorsLimitExceeded
+	}
+
+	return nil
+}
+
+// startWorkers запускает n воркеров
+func startWorkers(n int, taskCh <-chan Task, errCh chan<- error, done <-chan struct{}, wg *sync.WaitGroup) {
 	for i := 0; i < n; i++ {
 		wg.Add(1)
 		go func() {
@@ -54,17 +87,20 @@ func Run(tasks []Task, n, m int) error {
 			}
 		}()
 	}
+}
 
-	// Горутина для подсчёта ошибок
-	errCount := 0
-	errHandlerWg.Add(1)
+// startErrorHandler запускает горутину, считающую ошибки
+func startErrorHandler(maxErrors int, errCh <-chan error, done chan struct{}, wg *sync.WaitGroup) int {
+	var errCount int
+	wg.Add(1)
 	go func() {
-		defer errHandlerWg.Done()
+		defer wg.Done()
+		errCount := 0
 		for {
 			select {
 			case <-errCh:
 				errCount++
-				if errCount >= maxErrors { // если достигли лимита — останавливаемся
+				if errCount >= maxErrors {
 					close(done)
 					return
 				}
@@ -73,34 +109,17 @@ func Run(tasks []Task, n, m int) error {
 			}
 		}
 	}()
+	return errCount // возвращаем для проверки, но не используется напрямую
+}
 
-	// Отправляем задачи
+// feedTasks отправляет все задачи в канал
+func feedTasks(tasks []Task, taskCh chan<- Task, done <-chan struct{}) error {
 	for _, task := range tasks {
 		select {
 		case taskCh <- task:
 		case <-done:
-			// Остановились из-за ошибок — закрываем канал задач
-			close(taskCh)
-			wg.Wait()
-			errHandlerWg.Wait()
 			return ErrErrorsLimitExceeded
 		}
 	}
-	// Все задачи отправлены — закрываем канал
-	close(taskCh)
-	wg.Wait()
-
-	// Дожидаемся завершения обработчика ошибок
-	close(done)
-	errHandlerWg.Wait()
-
-	// Проверяем, не превышен ли лимит
-	if errCount >= maxErrors && maxErrors > 0 {
-		return ErrErrorsLimitExceeded
-	}
-	if maxErrors == 0 && errCount > 0 {
-		return ErrErrorsLimitExceeded
-	}
-
 	return nil
 }
