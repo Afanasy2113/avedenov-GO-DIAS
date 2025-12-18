@@ -40,7 +40,8 @@ func ExecutePipeline(in In, done In, stages ...Stage) Out {
 	return current
 }
 
-// Вспомогательная функция, которая читает из входного канала `in`и отправляет данные в выходной канал `out`, пока не получит сигнал `done`.
+// Вспомогательная функция, которая читает из входного канала `in`
+// и отправляет данные в выходной канал `out`, пока не получит сигнал `done`.
 func supportFunc(in In, out Bi, done In) {
 	defer close(out)
 	for {
