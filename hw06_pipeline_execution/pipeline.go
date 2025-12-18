@@ -21,29 +21,8 @@ func ExecutePipeline(in In, done In, stages ...Stage) Out {
 		// Создаем промежуточный канал для передачи данных в текущую стадию.
 		tempIn := make(chan interface{})
 
-		// Горутина, которая читает из предыдущего канала (current) и отправляет в tempIn.
-		go func(prevIn In, targetIn Bi) {
-			defer close(targetIn)
-			for {
-				select {
-				case item, ok := <-prevIn:
-					if !ok {
-						// Канал предыдущей стадии закрыт.
-						return
-					}
-					// Пытаемся отправить в промежуточный канал.
-					select {
-					case targetIn <- item:
-					case <-done:
-						// Сигнал остановки получен, выходим.
-						return
-					}
-				case <-done:
-					// Сигнал остановки получен, выходим.
-					return
-				}
-			}
-		}(current, tempIn)
+		// Запускаем горутину-передатчик, которая перенаправляет данные из current в tempIn.
+		go supportFunc(current, tempIn, done)
 
 		// Применяем текущую стадию к промежуточному каналу.
 		stageOutput := stage(tempIn)
@@ -51,33 +30,32 @@ func ExecutePipeline(in In, done In, stages ...Stage) Out {
 		// Создаем канал, который станет выходом для текущего этапа соединения.
 		nextCurrent := make(chan interface{})
 
-		// Горутина, которая читает из выхода стадии (stageOutput) и отправляет в nextCurrent.
-		go func(stageOut In, finalOut Bi) {
-			defer close(finalOut)
-			for {
-				select {
-				case item, ok := <-stageOut:
-					if !ok {
-						// Канал стадии закрыт.
-						return
-					}
-					// Отправика в финальный канал для следующей стадии.
-					select {
-					case finalOut <- item:
-					case <-done:
-						// Сигнал остановки получен, выходим.
-						return
-					}
-				case <-done:
-					// Сигнал остановки получен, выходим.
-					return
-				}
-			}
-		}(stageOutput, nextCurrent)
+		// Запускаем горутину-приемник, которая перенаправляет данные из stageOutput в nextCurrent.
+		go supportFunc(stageOutput, nextCurrent, done)
 
 		// Обновляем current, чтобы он указывал на канал, из которого будет читать следующая стадия.
 		current = nextCurrent
 	}
 
 	return current
+}
+
+// Вспомогательная функция, которая читает из входного канала `in`и отправляет данные в выходной канал `out`, пока не получит сигнал `done`.
+func supportFunc(in In, out Bi, done In) {
+	defer close(out)
+	for {
+		select {
+		case item, ok := <-in:
+			if !ok {
+				return
+			}
+			select {
+			case out <- item:
+			case <-done:
+				return
+			}
+		case <-done:
+			return
+		}
+	}
 }
