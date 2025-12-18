@@ -97,7 +97,7 @@ func TestRun_ConcurrencyWithoutSleep(t *testing.T) {
 	err := Run(tasks, 5, 100)
 	require.NoError(t, err)
 
-	// Убедимся, что одновременно работало хотя бы 2 задачи
+	// Убедимся, что одновременно работало хотя бы 2 задачи.
 	require.Eventually(t, func() bool {
 		mu.Lock()
 		defer mu.Unlock()

@@ -29,10 +29,10 @@ func Run(tasks []Task, n, m int) error {
 	var wg sync.WaitGroup
 	var errHandlerWg sync.WaitGroup
 
-	// Запускаем воркеры
+	// Запускаем воркеры.
 	startWorkers(n, taskCh, errCh, done, &wg)
 
-	// Запускаем обработчик ошибок
+	// Запускаем обработчик ошибок.
 	errCount := startErrorHandler(maxErrors, errCh, done, &errHandlerWg)
 
 	// Отправляем задачи
@@ -43,15 +43,15 @@ func Run(tasks []Task, n, m int) error {
 		return err
 	}
 
-	// Все задачи отправлены — закрываем канал
+	// Все задачи отправлены — закрываем канал.
 	close(taskCh)
 	wg.Wait()
 
-	// Дожидаемся завершения обработчика ошибок
+	// Дожидаемся завершения обработчика ошибок.
 	close(done)
 	errHandlerWg.Wait()
 
-	// Проверяем результат
+	// Проверяем результат.
 	if maxErrors == 0 && errCount > 0 {
 		return ErrErrorsLimitExceeded
 	}
@@ -62,7 +62,7 @@ func Run(tasks []Task, n, m int) error {
 	return nil
 }
 
-// startWorkers запускает n воркеров
+// startWorkers запускает n воркеров.
 func startWorkers(n int, taskCh <-chan Task, errCh chan<- error, done <-chan struct{}, wg *sync.WaitGroup) {
 	for i := 0; i < n; i++ {
 		wg.Add(1)
@@ -89,7 +89,7 @@ func startWorkers(n int, taskCh <-chan Task, errCh chan<- error, done <-chan str
 	}
 }
 
-// startErrorHandler запускает горутину, считающую ошибки
+// startErrorHandler запускает горутину, считающую ошибки.
 func startErrorHandler(maxErrors int, errCh <-chan error, done chan struct{}, wg *sync.WaitGroup) int {
 	var errCount int
 	wg.Add(1)
@@ -109,10 +109,10 @@ func startErrorHandler(maxErrors int, errCh <-chan error, done chan struct{}, wg
 			}
 		}
 	}()
-	return errCount // возвращаем для проверки, но не используется напрямую
+	return errCount // возвращаем для проверки, но не используется напрямую.
 }
 
-// feedTasks отправляет все задачи в канал
+// feedTasks отправляет все задачи в канал.
 func feedTasks(tasks []Task, taskCh chan<- Task, done <-chan struct{}) error {
 	for _, task := range tasks {
 		select {
