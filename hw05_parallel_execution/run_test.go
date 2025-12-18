@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"math/rand"
+	"sync"
 	"sync/atomic"
 	"testing"
 	"time"
@@ -67,4 +68,39 @@ func TestRun(t *testing.T) {
 		require.Equal(t, runTasksCount, int32(tasksCount), "not all tasks were completed")
 		require.LessOrEqual(t, int64(elapsedTime), int64(sumTime/2), "tasks were run sequentially?")
 	})
+}
+
+func TestRun_ConcurrencyWithoutSleep(t *testing.T) {
+	var mu sync.Mutex
+	concurrentTasks := 0
+	maxConcurrentTasks := 0
+
+	tasks := make([]Task, 50)
+	for i := range tasks {
+		tasks[i] = func() error {
+			mu.Lock()
+			concurrentTasks++
+			if concurrentTasks > maxConcurrentTasks {
+				maxConcurrentTasks = concurrentTasks
+			}
+			mu.Unlock()
+
+			time.Sleep(time.Microsecond * 100)
+
+			mu.Lock()
+			concurrentTasks--
+			mu.Unlock()
+			return nil
+		}
+	}
+
+	err := Run(tasks, 5, 100)
+	require.NoError(t, err)
+
+	// Убедимся, что одновременно работало хотя бы 2 задачи
+	require.Eventually(t, func() bool {
+		mu.Lock()
+		defer mu.Unlock()
+		return maxConcurrentTasks >= 2
+	}, time.Second, 10*time.Millisecond, "expected at least 2 tasks running concurrently")
 }
