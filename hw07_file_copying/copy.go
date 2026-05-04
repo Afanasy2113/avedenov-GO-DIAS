@@ -22,7 +22,6 @@ func Copy(fromPath, toPath string, offset, limit int64) error {
 	defer func(src *os.File) {
 		err := src.Close()
 		if err != nil {
-
 		}
 	}(src)
 
@@ -65,7 +64,6 @@ func Copy(fromPath, toPath string, offset, limit int64) error {
 	defer func(dst *os.File) {
 		err := dst.Close()
 		if err != nil {
-
 		}
 	}(dst)
 
