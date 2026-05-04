@@ -34,7 +34,7 @@ func Copy(fromPath, toPath string, offset, limit int64) error {
 
 	// Проверяем, что это обычный файл.
 	if !srcInfo.Mode().IsRegular() {
-		return fmt.Errorf("source is not a regular file (e.g. /dev/urandom is not supported)")
+		return fmt.Errorf("это необычный файл")
 	}
 
 	fileSize := srcInfo.Size()
@@ -60,7 +60,7 @@ func Copy(fromPath, toPath string, offset, limit int64) error {
 
 	dst, err := os.Create(toPath)
 	if err != nil {
-		return fmt.Errorf("Ошибка создания файла: %w", err)
+		return fmt.Errorf("ошибка создания файла: %w", err)
 	}
 	defer func(dst *os.File) {
 		err := dst.Close()
@@ -91,13 +91,13 @@ func Copy(fromPath, toPath string, offset, limit int64) error {
 		// Копируем.
 		n, err := src.Read(buf[:toRead])
 		if err != nil && err != io.EOF {
-			return fmt.Errorf("Ошибка чтения: %w", err)
+			return fmt.Errorf("ошибка чтения: %w", err)
 		}
 
 		// Пишем прочитанные данные.
 		if n > 0 {
 			if _, err := dst.Write(buf[:n]); err != nil {
-				return fmt.Errorf("Ошибка записи: %w", err)
+				return fmt.Errorf("ошибка записи: %w", err)
 			}
 			totalCopy += int64(n)
 

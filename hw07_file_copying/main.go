@@ -23,11 +23,11 @@ func main() {
 	flag.Parse()
 	// Place your code here.
 	if from == "" || to == "" {
-		fmt.Fprintln(os.Stderr, "Необходимы оба параметра")
+		fmt.Fprintln(os.Stderr, "необходимы оба параметра")
 		os.Exit(1)
 	}
 
 	if err := Copy(from, to, offset, limit); err != nil {
-		log.Fatalf("Ошибка копирования файла: %v", err)
+		log.Fatalf("ошибка копирования файла: %v", err)
 	}
 }

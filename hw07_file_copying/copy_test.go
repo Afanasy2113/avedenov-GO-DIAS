@@ -32,21 +32,21 @@ func TestCopy(t *testing.T) {
 
 			err := Copy(filepath.Join("testdata", "input.txt"), dstPath, tt.offset, tt.limit)
 			if err != nil {
-				t.Fatalf("Copy failed: %v", err)
+				t.Fatalf("copy failed: %v", err)
 			}
 
 			expectedData, err := os.ReadFile(expectedPath)
 			if err != nil {
-				t.Fatalf("Failed to read expected file: %v", err)
+				t.Fatalf("failed to read expected file: %v", err)
 			}
 
 			actualData, err := os.ReadFile(dstPath)
 			if err != nil {
-				t.Fatalf("Failed to read actual file: %v", err)
+				t.Fatalf("failed to read actual file: %v", err)
 			}
 
 			if !bytes.Equal(actualData, expectedData) {
-				t.Errorf("Output does not match expected for %s", tt.name)
+				t.Errorf("output does not match expected for %s", tt.name)
 			}
 		})
 	}
