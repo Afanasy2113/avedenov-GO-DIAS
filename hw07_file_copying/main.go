@@ -2,6 +2,9 @@ package main
 
 import (
 	"flag"
+	"fmt"
+	"log"
+	"os"
 )
 
 var (
@@ -19,4 +22,12 @@ func init() {
 func main() {
 	flag.Parse()
 	// Place your code here.
+	if from == "" || to == "" {
+		fmt.Fprintln(os.Stderr, "необходимы оба параметра")
+		os.Exit(1)
+	}
+
+	if err := Copy(from, to, offset, limit); err != nil {
+		log.Fatalf("ошибка копирования файла: %v", err)
+	}
 }
