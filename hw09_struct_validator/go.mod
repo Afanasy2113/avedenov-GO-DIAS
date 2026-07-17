@@ -1,3 +1,3 @@
-module github.com/fixme_my_friend/hw09_struct_validator
+module github.com/Afanasy2113/avedenov-GO-DIAS/hw09_struct_validator
 
 go 1.19
